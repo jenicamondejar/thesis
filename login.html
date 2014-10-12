@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style type="text/css">	
+.login {
+	-moz-box-shadow:inset 0px 1px 3px 0px #91b8b3;
+	-webkit-box-shadow:inset 0px 1px 3px 0px #91b8b3;
+	box-shadow:inset 0px 1px 3px 0px #91b8b3;
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #768d87), color-stop(1, #6c7c7c));
+	background:-moz-linear-gradient(top, #768d87 5%, #6c7c7c 100%);
+	background:-webkit-linear-gradient(top, #768d87 5%, #6c7c7c 100%);
+	background:-o-linear-gradient(top, #768d87 5%, #6c7c7c 100%);
+	background:-ms-linear-gradient(top, #768d87 5%, #6c7c7c 100%);
+	background:linear-gradient(to bottom, #768d87 5%, #6c7c7c 100%);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#768d87', endColorstr='#6c7c7c',GradientType=0);
+	background-color:#768d87;
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	border-radius:5px;
+	border:1px solid #566963;
+	display:inline-block;
+	cursor:pointer;
+	color:#ffffff;
+	font-family:arial;
+	font-size:15px;
+	font-weight:bold;
+	padding:10px 30px;
+	text-decoration:none;
+	text-shadow:0px -1px 0px #2b665e;
+}
+.login:hover {
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0.05, #6c7c7c), color-stop(1, #768d87));
+	background:-moz-linear-gradient(top, #6c7c7c 5%, #768d87 100%);
+	background:-webkit-linear-gradient(top, #6c7c7c 5%, #768d87 100%);
+	background:-o-linear-gradient(top, #6c7c7c 5%, #768d87 100%);
+	background:-ms-linear-gradient(top, #6c7c7c 5%, #768d87 100%);
+	background:linear-gradient(to bottom, #6c7c7c 5%, #768d87 100%);
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#6c7c7c', endColorstr='#768d87',GradientType=0);
+	background-color:#6c7c7c;
+}
+.login:active {
+	position:relative;
+	top:1px;
+}
+
+.input_hidden {
+    position: absolute;
+    left: -9999px;
+}
+
+.selected {
+    background-color: #ccc;
+}
+
+#emotion label {
+    display: inline-block;
+    cursor: pointer;
+}
+
+#emotion label img {
+    padding: 3px;
+}
+
+.checkbox, .radio {
+	width: 19px;
+	height: 25px;
+	padding: 0 5px 0 0;
+	background: url(checkbox.png) no-repeat;
+	display: block;
+	clear: left;
+	float: left;
+}
+.radio {
+	background: url(radio.png) no-repeat;
+}
+.select {
+	position: absolute;
+	width: 158px; /* With the padding included, the width is 190 pixels: the actual width of the image. */
+	height: 21px;
+	padding: 0 24px 0 8px;
+	color: #fff;
+	font: 12px/21px arial,sans-serif;
+	background: url(select.png) no-repeat;
+	overflow: hidden;
+}
+</style>
+<script>
+var checkboxHeight = "25";
+var radioHeight = "25";
+var selectWidth = "190";
+
+
+/* No need to change anything after this */
+
+
+document.write('<style type="text/css">input.styled { display: none; } select.styled { position: relative; width: ' + selectWidth + 'px; opacity: 0; filter: alpha(opacity=0); z-index: 5; } .disabled { opacity: 0.5; filter: alpha(opacity=50); }</style>');
+
+var Custom = {
+	init: function() {
+		var inputs = document.getElementsByTagName("input"), span = Array(), textnode, option, active;
+		for(a = 0; a < inputs.length; a++) {
+			if((inputs[a].type == "checkbox" || inputs[a].type == "radio") && inputs[a].className.indexOf("styled") > -1) {
+				span[a] = document.createElement("span");
+				span[a].className = inputs[a].type;
+
+				if(inputs[a].checked == true) {
+					if(inputs[a].type == "checkbox") {
+						position = "0 -" + (checkboxHeight*2) + "px";
+						span[a].style.backgroundPosition = position;
+					} else {
+						position = "0 -" + (radioHeight*2) + "px";
+						span[a].style.backgroundPosition = position;
+					}
+				}
+				inputs[a].parentNode.insertBefore(span[a], inputs[a]);
+				inputs[a].onchange = Custom.clear;
+				if(!inputs[a].getAttribute("disabled")) {
+					span[a].onmousedown = Custom.pushed;
+					span[a].onmouseup = Custom.check;
+				} else {
+					span[a].className = span[a].className += " disabled";
+				}
+			}
+		}
+		inputs = document.getElementsByTagName("select");
+		for(a = 0; a < inputs.length; a++) {
+			if(inputs[a].className.indexOf("styled") > -1) {
+				option = inputs[a].getElementsByTagName("option");
+				active = option[0].childNodes[0].nodeValue;
+				textnode = document.createTextNode(active);
+				for(b = 0; b < option.length; b++) {
+					if(option[b].selected == true) {
+						textnode = document.createTextNode(option[b].childNodes[0].nodeValue);
+					}
+				}
+				span[a] = document.createElement("span");
+				span[a].className = "select";
+				span[a].id = "select" + inputs[a].name;
+				span[a].appendChild(textnode);
+				inputs[a].parentNode.insertBefore(span[a], inputs[a]);
+				if(!inputs[a].getAttribute("disabled")) {
+					inputs[a].onchange = Custom.choose;
+				} else {
+					inputs[a].previousSibling.className = inputs[a].previousSibling.className += " disabled";
+				}
+			}
+		}
+		document.onmouseup = Custom.clear;
+	},
+	pushed: function() {
+		element = this.nextSibling;
+		if(element.checked == true && element.type == "checkbox") {
+			this.style.backgroundPosition = "0 -" + checkboxHeight*3 + "px";
+		} else if(element.checked == true && element.type == "radio") {
+			this.style.backgroundPosition = "0 -" + radioHeight*3 + "px";
+		} else if(element.checked != true && element.type == "checkbox") {
+			this.style.backgroundPosition = "0 -" + checkboxHeight + "px";
+		} else {
+			this.style.backgroundPosition = "0 -" + radioHeight + "px";
+		}
+	},
+	check: function() {
+		element = this.nextSibling;
+		if(element.checked == true && element.type == "checkbox") {
+			this.style.backgroundPosition = "0 0";
+			element.checked = false;
+		} else {
+			if(element.type == "checkbox") {
+				this.style.backgroundPosition = "0 -" + checkboxHeight*2 + "px";
+			} else {
+				this.style.backgroundPosition = "0 -" + radioHeight*2 + "px";
+				group = this.nextSibling.name;
+				inputs = document.getElementsByTagName("input");
+				for(a = 0; a < inputs.length; a++) {
+					if(inputs[a].name == group && inputs[a] != this.nextSibling) {
+						inputs[a].previousSibling.style.backgroundPosition = "0 0";
+					}
+				}
+			}
+			element.checked = true;
+		}
+	},
+	clear: function() {
+		inputs = document.getElementsByTagName("input");
+		for(var b = 0; b < inputs.length; b++) {
+			if(inputs[b].type == "checkbox" && inputs[b].checked == true && inputs[b].className.indexOf("styled") > -1) {
+				inputs[b].previousSibling.style.backgroundPosition = "0 -" + checkboxHeight*2 + "px";
+			} else if(inputs[b].type == "checkbox" && inputs[b].className.indexOf("styled") > -1) {
+				inputs[b].previousSibling.style.backgroundPosition = "0 0";
+			} else if(inputs[b].type == "radio" && inputs[b].checked == true && inputs[b].className.indexOf("styled") > -1) {
+				inputs[b].previousSibling.style.backgroundPosition = "0 -" + radioHeight*2 + "px";
+			} else if(inputs[b].type == "radio" && inputs[b].className.indexOf("styled") > -1) {
+				inputs[b].previousSibling.style.backgroundPosition = "0 0";
+			}
+		}
+	},
+	choose: function() {
+		option = this.getElementsByTagName("option");
+		for(d = 0; d < option.length; d++) {
+			if(option[d].selected == true) {
+				document.getElementById("select" + this.name).childNodes[0].nodeValue = option[d].childNodes[0].nodeValue;
+			}
+		}
+	}
+}
+window.onload = Custom.init;
+</script>
+</head>
+<body bgcolor="#FFFF66">
+	<center>
+	<br><br><br><br><br>
+	<div style="width:500px;height:300px;-webkit-border-radius: 50px 50px 50px 50px;-moz-border-radius: 50px 50px 50px 50px;border-radius: 50px 50px 50px 50px;border:15px solid #F3EF6D;background-color:#f0f0f0;">
+		<h1 style="font-family:arial; color:#575756">Login</h1>
+		<hr noshade width="85%"><br>
+		<form method="post" action="attendanceDIV.html">
+		<p><input type="text" name="login" value="" placeholder="Username" size="25" style="height:20px"></p>
+		<p><input type="password" name="password" value="" placeholder="Password" size="25" style="height:20px"></p>
+		<p class="submit"><input type="submit" name="btn" class="login" value="login" /></p>
+		</form>
+	</div>
+	</center>
+	<!--
+	<script>
+		$('#emotion input:radio').addClass('input_hidden');
+	$('#emotion label').click(function(){
+		$(this).addClass('selected').siblings().removeClass('selected');
+	});
+	</script>
+	<div id="emotion">
+    <input type="radio" name="emotion" id="sad" />
+        <label for="sad"><img src="img/a.jpg" alt="I'm sad" /></label>
+
+    <input type="radio" name="emotion" id="happy" />
+        <label for="happy"><img src="img/p.jpg" alt="I'm happy" /></label>
+	-->
+	<div data-role="fieldcontain">
+    <fieldset data-role="controlgroup">
+    	<legend>Choose a pet:</legend>
+         	<input type="radio" name="radio-choice-2" id="radio-choice-21" value="choice-1" checked="checked" />
+         	<label for="radio-choice-21">Cat</label>
+
+         	<input type="radio" name="radio-choice-2" id="radio-choice-22" value="choice-2"  />
+         	<label for="radio-choice-22">Dog</label>
+
+         	<input type="radio" name="radio-choice-2" id="radio-choice-23" value="choice-3"  />
+         	<label for="radio-choice-23">Hamster</label>
+
+         	<input type="radio" name="radio-choice-2" id="radio-choice-24" value="choice-4"  />
+         	<label for="radio-choice-24">Lizard</label>
+    </fieldset>
+</div>
+	
+	<div data-role="fieldcontain">
+	    <fieldset data-role="controlgroup" data-type="horizontal">
+	     	<legend>Layout view:</legend>
+	         	<input type="radio" name="radio-view" id="radio-view-a" value="list"  />
+	         	<label for="radio-view-a">List</label>
+	         	<input type="radio" name="radio-view" id="radio-view-b" value="grid"  />
+	         	<label for="radio-view-b">Grid</label>
+	         	<input type="radio" name="radio-view" id="radio-view-c" value="gallery"  />
+	         	<label for="radio-view-c">Gallery</label>
+	    </fieldset>
+	</div>
+	
+	<input type="radio" name="radio" class="styled" /> Yes
+	<input type="radio" name="radio" class="styled" /> No
+</div>
+</body>
+</html>
